@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#071526" />
+<title>TRIFIN — Pos 7 Economic Problem Solver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#071526;
+  --bg2:#0a2440;
+  --panel:rgba(11,33,57,.78);
+  --panel2:rgba(255,255,255,.07);
+  --line:rgba(137,202,255,.18);
+  --text:#f4f8ff;
+  --muted:#a9b9cb;
+  --cyan:#5ee7ff;
+  --cyan2:#24b7e9;
+  --gold:#ffc95c;
+  --gold2:#f4a91c;
+  --danger:#ff7085;
+  --shadow:0 32px 80px rgba(0,0,0,.46);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none}
+html,body{min-height:100%;background:var(--bg)}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:22px;
+  overflow-x:hidden;
+  position:relative;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(35,183,233,.16), transparent 28%),
+    radial-gradient(circle at 84% 82%, rgba(255,201,92,.11), transparent 24%),
+    linear-gradient(145deg,#061321 0%,#0a213b 52%,#071526 100%);
+}
+
+/* ambient world */
+.world-grid{position:fixed;inset:0;pointer-events:none;opacity:.4;background-image:linear-gradient(rgba(94,231,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(94,231,255,.035) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,transparent,black 18%,black 82%,transparent)}
+.orb{position:fixed;border-radius:50%;filter:blur(2px);pointer-events:none;opacity:.7}
+.orb.a{width:280px;height:280px;left:-120px;top:-110px;background:radial-gradient(circle,rgba(51,195,255,.22),transparent 68%)}
+.orb.b{width:260px;height:260px;right:-110px;bottom:-90px;background:radial-gradient(circle,rgba(255,196,73,.18),transparent 70%)}
+.route{position:fixed;width:56vw;max-width:700px;height:2px;left:-6vw;top:20%;transform:rotate(-24deg);background:linear-gradient(90deg,transparent,rgba(94,231,255,.24),transparent);box-shadow:0 0 20px rgba(94,231,255,.15);pointer-events:none}
+.star{position:fixed;width:3px;height:3px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 10px rgba(255,255,255,.55);pointer-events:none;animation:twinkle 4s ease-in-out infinite}
+.star.s1{top:13%;right:18%;animation-delay:.6s}.star.s2{top:69%;left:10%;animation-delay:1.5s}.star.s3{top:44%;right:7%;animation-delay:2.2s}.star.s4{bottom:13%;left:28%;animation-delay:3s}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.4)}}
+
+.shell{width:min(100%,470px);position:relative;z-index:5}
+.top-brand{display:flex;justify-content:space-between;align-items:center;margin:0 4px 14px;color:#dbeeff}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{width:38px;height:38px;border:1px solid rgba(94,231,255,.34);border-radius:12px;background:linear-gradient(145deg,rgba(94,231,255,.14),rgba(255,255,255,.03));display:grid;place-items:center;box-shadow:inset 0 0 18px rgba(94,231,255,.05)}
+.brand-mark svg{width:22px;height:22px;filter:drop-shadow(0 0 8px rgba(94,231,255,.35))}
+.brand-text strong{font-size:17px;letter-spacing:.4px}.brand-text strong span{color:var(--cyan)}
+.brand-text small{display:block;color:#7890a7;font-size:9px;letter-spacing:1.8px;text-transform:uppercase;margin-top:-1px}
+.secure-pill{font-size:10px;font-weight:700;color:#bdefff;padding:7px 10px;border:1px solid rgba(94,231,255,.19);border-radius:999px;background:rgba(94,231,255,.06);display:flex;align-items:center;gap:6px}
+.secure-dot{width:6px;height:6px;border-radius:50%;background:#63f0bb;box-shadow:0 0 10px #63f0bb}
+
+.card{
+  width:100%;
+  border-radius:30px;
+  padding:26px;
+  background:linear-gradient(160deg,rgba(14,43,71,.91),rgba(7,27,48,.91));
+  border:1px solid rgba(139,206,255,.16);
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter:blur(18px);
+  overflow:hidden;
+  position:relative;
+}
+.card:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(94,231,255,.55),transparent)}
+.card:after{content:"";position:absolute;width:210px;height:210px;border-radius:50%;right:-120px;top:-110px;background:radial-gradient(circle,rgba(94,231,255,.12),transparent 68%);pointer-events:none}
+
+.screen{animation:fadeUp .38s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;color:var(--gold);font-size:10px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;margin-bottom:10px}
+.eyebrow:before{content:"";width:18px;height:1px;background:var(--gold)}
+h1{font-size:27px;line-height:1.14;letter-spacing:-.7px;margin-bottom:8px}
+.lead{font-size:12.5px;line-height:1.7;color:var(--muted);max-width:380px;margin-bottom:20px}
+
+.mission-panel{display:flex;gap:12px;align-items:center;padding:13px 14px;border-radius:18px;border:1px solid rgba(255,201,92,.16);background:linear-gradient(135deg,rgba(255,201,92,.09),rgba(255,255,255,.025));margin-bottom:20px}
+.vault-icon{width:42px;height:42px;border-radius:14px;flex:0 0 42px;display:grid;place-items:center;background:rgba(255,201,92,.12);border:1px solid rgba(255,201,92,.18)}
+.vault-icon svg{width:23px;height:23px}
+.mission-panel b{font-size:12px;color:#ffe2a3}.mission-panel span{display:block;color:#8ea3b7;font-size:10px;margin-top:2px}
+
+.section-label{display:flex;justify-content:space-between;align-items:end;margin:0 2px 10px}.section-label b{font-size:12px}.section-label span{font-size:9px;color:#71879d}
+.grid-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.btn-group{
+  appearance:none;border:1px solid rgba(139,206,255,.12);background:rgba(255,255,255,.045);color:var(--text);
+  border-radius:17px;padding:13px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+  transition:.2s ease;min-height:58px;text-align:left;position:relative;overflow:hidden;
+}
+.btn-group:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(94,231,255,.07),transparent);transform:translateX(-100%);transition:.35s}
+.btn-group:hover{border-color:rgba(94,231,255,.3);background:rgba(94,231,255,.075);transform:translateY(-1px)}
+.btn-group:hover:before{transform:translateX(100%)}
+.btn-group:active{transform:scale(.975)}
+.currency-symbol{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;background:rgba(94,231,255,.08);color:var(--cyan);font-size:14px;font-weight:800;border:1px solid rgba(94,231,255,.12)}
+.group-meta{flex:1;min-width:0}.group-meta strong{display:block;font-size:13px}.group-meta small{font-size:9px;color:#71879d;display:block;margin-top:1px}.chev{font-size:15px;color:#58758e}
+.footer-note{display:flex;align-items:flex-start;gap:8px;color:#6e859a;font-size:9px;line-height:1.6;margin-top:16px;padding:0 2px}.footer-note svg{flex:0 0 13px;margin-top:1px}
+
+/* code screen */
+#screen-code{display:none;text-align:center}
+.pos-badge{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;background:rgba(255,201,92,.09);border:1px solid rgba(255,201,92,.18);color:#ffd87f;font-size:10px;font-weight:800;letter-spacing:.6px;margin-bottom:16px}
+.pos-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.label-small{font-size:10px;color:#72889d;text-transform:uppercase;letter-spacing:1.6px;font-weight:700}
+.group-name-display{font-size:34px;line-height:1;color:white;margin:7px 0 16px;letter-spacing:-1px}
+.instruction-box{font-size:11px;line-height:1.65;color:#9eb0c0;padding:13px 14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(139,206,255,.1);margin-bottom:15px;text-align:left;display:flex;gap:10px;align-items:flex-start}
+.instruction-box .info{width:22px;height:22px;flex:0 0 22px;border-radius:8px;display:grid;place-items:center;background:rgba(94,231,255,.09);color:var(--cyan);font-weight:800}
+.code-shell{padding:12px;border-radius:20px;background:linear-gradient(145deg,rgba(94,231,255,.06),rgba(255,201,92,.045));border:1px solid rgba(139,206,255,.11);margin-bottom:12px}
+.code-title{display:flex;justify-content:space-between;align-items:center;margin:0 3px 8px;color:#71879d;font-size:9px;text-transform:uppercase;letter-spacing:1px}.code-title span:last-child{color:#63f0bb}
+.code-display{font-family:'Poppins',monospace;font-size:18px;font-weight:800;letter-spacing:1.2px;color:#dff9ff;padding:18px 10px;border-radius:15px;border:1px dashed rgba(94,231,255,.26);background:rgba(2,17,31,.42);filter:blur(7px);opacity:.48;transition:.25s ease;text-shadow:0 0 18px rgba(94,231,255,.18);overflow-wrap:anywhere}
+.code-display.revealed{filter:blur(0);opacity:1;border-style:solid;border-color:rgba(94,231,255,.46);box-shadow:inset 0 0 28px rgba(94,231,255,.05),0 0 22px rgba(94,231,255,.05)}
+.btn-hold{width:100%;border:0;border-radius:17px;padding:16px 18px;background:linear-gradient(110deg,#1e91c1,#2bc9e9);color:#03131f;font-weight:800;font-size:13px;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:9px;box-shadow:0 14px 30px rgba(30,145,193,.22);transition:.18s ease;touch-action:none}
+.btn-hold:active{transform:scale(.985);box-shadow:0 8px 18px rgba(30,145,193,.2)}
+.btn-hold svg{width:18px;height:18px;fill:currentColor}
+/* modal */
+.modal-overlay{position:fixed;inset:0;z-index:50;background:rgba(2,11,20,.76);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.modal{width:min(100%,365px);border-radius:25px;padding:22px;background:linear-gradient(160deg,#102d4a,#0a1f35);border:1px solid rgba(139,206,255,.16);box-shadow:0 30px 75px rgba(0,0,0,.5);transform:translateY(16px) scale(.985);opacity:0;transition:.24s ease;text-align:center}
+.modal.show{transform:none;opacity:1}
+.modal-icon{width:50px;height:50px;margin:0 auto 13px;border-radius:16px;display:grid;place-items:center;background:rgba(255,201,92,.1);border:1px solid rgba(255,201,92,.18)}
+.modal-icon svg{width:27px;height:27px}
+.modal h3{font-size:18px;margin-bottom:7px}.modal p{font-size:11px;line-height:1.65;color:#97aabd;margin-bottom:18px}.modal p strong{color:#fff;font-size:14px}
+.modal-btn-wrap{display:grid;grid-template-columns:1fr 1.25fr;gap:9px}.btn-cancel,.btn-confirm{border:0;border-radius:14px;padding:13px 10px;font-size:11px;font-weight:800;cursor:pointer}.btn-cancel{background:rgba(255,255,255,.06);color:#a9bac9;border:1px solid rgba(255,255,255,.06)}.btn-confirm{background:linear-gradient(110deg,#f5b42f,#ffd778);color:#2d2005;box-shadow:0 10px 22px rgba(245,180,47,.15)}
+
+@media(max-width:520px){
+  body{padding:14px;align-items:flex-start;padding-top:max(16px,env(safe-area-inset-top))}
+  .shell{margin:auto 0}
+  .top-brand{margin-bottom:10px}
+  .card{padding:20px;border-radius:24px}
+  h1{font-size:23px}.lead{font-size:11px;margin-bottom:16px}.mission-panel{margin-bottom:16px}
+  .btn-group{min-height:54px;padding:11px}.currency-symbol{width:29px;height:29px}.group-meta strong{font-size:12px}
+  .secure-pill{display:none}.brand-text small{font-size:8px}
+}
+@media(max-width:360px){.card{padding:17px}.grid-groups{gap:8px}.btn-group{padding:9px}.group-meta small{display:none}.code-display{font-size:15px}}
+@media(max-height:690px) and (max-width:520px){body{padding-top:10px;padding-bottom:10px}.top-brand{display:none}.card{padding:17px}.mission-panel{padding:10px;margin-bottom:12px}.lead{margin-bottom:12px}.btn-group{min-height:48px}.footer-note{margin-top:10px}}
+</style>
+</head>
+<body>
+<div class="world-grid"></div><div class="orb a"></div><div class="orb b"></div><div class="route"></div>
+<div class="star s1"></div><div class="star s2"></div><div class="star s3"></div><div class="star s4"></div>
+
+<main class="shell">
+  <div class="top-brand">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.7 20 7v10l-8 4.3L4 17V7l8-4.3Z" stroke="#5ee7ff" stroke-width="1.5"/><path d="m7.5 9.2 4.5-2.4 4.5 2.4v5.6L12 17.2l-4.5-2.4V9.2Z" stroke="#ffc95c" stroke-width="1.4"/><circle cx="12" cy="12" r="1.5" fill="#5ee7ff"/></svg>
+      </div>
+      <div class="brand-text"><strong>TRI<span>FIN</span></strong><small>Trivia Finance Challenge</small></div>
+    </div>
+    <div class="secure-pill"><span class="secure-dot"></span> SECURE ACCESS</div>
+  </div>
+
+  <section class="card">
+    <div class="screen" id="screen-selection">
+      <div class="eyebrow">Pos 7 · Economic Problem Solver</div>
+      <h1>Buka akses misi kelompokmu.</h1>
+      <p class="lead">Pilih identitas kelompok untuk membuka kode akses khusus Pos 7. Pastikan pilihanmu benar sebelum melanjutkan.</p>
+
+      <div class="mission-panel">
+        <div class="vault-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="14" rx="3" stroke="#ffc95c" stroke-width="1.5"/><circle cx="12" cy="12" r="3.2" stroke="#ffc95c" stroke-width="1.5"/><path d="M12 8.8v2M12 13.2v2M8.8 12h2M13.2 12h2" stroke="#ffc95c" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </div>
+        <div><b>Economic Problem Solver Access</b><span>Kode akan terbuka setelah kelompok dikonfirmasi.</span></div>
+      </div>
+
+      <div class="section-label"><b>Pilih Kelompok</b><span>8 kelompok tersedia</span></div>
+      <div class="grid-groups">
+        <button class="btn-group" onclick="selectGroup('IDR')"><span class="currency-symbol">Rp</span><span class="group-meta"><strong>IDR</strong><small>Rupiah</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('USD')"><span class="currency-symbol">$</span><span class="group-meta"><strong>USD</strong><small>Dollar</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('EUR')"><span class="currency-symbol">€</span><span class="group-meta"><strong>EUR</strong><small>Euro</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('YEN')"><span class="currency-symbol">¥</span><span class="group-meta"><strong>YEN</strong><small>Yen</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('GBP')"><span class="currency-symbol">£</span><span class="group-meta"><strong>GBP</strong><small>Pound</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('CNY')"><span class="currency-symbol">¥</span><span class="group-meta"><strong>CNY</strong><small>Yuan</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('KRW')"><span class="currency-symbol">₩</span><span class="group-meta"><strong>KRW</strong><small>Won</small></span><span class="chev">›</span></button>
+        <button class="btn-group" onclick="selectGroup('SAR')"><span class="currency-symbol">﷼</span><span class="group-meta"><strong>SAR</strong><small>Riyal</small></span><span class="chev">›</span></button>
+      </div>
+      <div class="footer-note">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 5 6v5c0 4.6 2.9 8 7 10 4.1-2 7-5.4 7-10V6l-7-3Z" stroke="#71879d" stroke-width="1.5"/></svg>
+        <span>Kode bersifat khusus per kelompok. Jangan memperlihatkannya kepada kelompok lain.</span>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-code">
+      <div class="pos-badge"><span class="dot"></span> POS 7 · ECONOMIC PROBLEM SOLVER</div>
+      <div class="label-small">Kelompok Terpilih</div>
+      <h2 class="group-name-display" id="display-group-name">IDR</h2>
+      <div class="instruction-box"><span class="info">i</span><span>Tekan dan <strong style="color:#dcebf7">tahan tombol</strong> di bawah untuk menampilkan kode. Lepaskan tombol untuk menyembunyikannya kembali.</span></div>
+
+      <div class="code-shell">
+        <div class="code-title"><span>Mission Access Code</span><span>Encrypted</span></div>
+        <div class="code-display" id="secret-code">TRF-XXX-P07-0000</div>
+      </div>
+
+      <button class="btn-hold" id="btn-reveal">
+        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5Zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>
+        Tahan untuk melihat kode
+      </button>
+    </div>
+  </section>
+</main>
+
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" id="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8 19 6.5v7.1c0 3.7-2.4 6.2-7 7.8-4.6-1.6-7-4.1-7-7.8V6.5L12 2.8Z" stroke="#ffc95c" stroke-width="1.5"/><path d="m8.8 12.1 2 2 4.5-4.6" stroke="#ffc95c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h3>Konfirmasi Kelompok</h3>
+    <p>Kamu memilih kelompok <strong id="modal-group-name"></strong>.<br>Pastikan identitas kelompok sudah benar.</p>
+    <div class="modal-btn-wrap">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-confirm" onclick="confirmGroup()">Ya, buka akses</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const POS_CODES = {
+  'IDR':'TRF-IDR-P07-7401',
+  'USD':'TRF-USD-P07-7702',
+  'EUR':'TRF-EUR-P07-7303',
+  'YEN':'TRF-YEN-P07-7404',
+  'GBP':'TRF-GBP-P07-7705',
+  'CNY':'TRF-CNY-P07-7706',
+  'KRW':'TRF-KRW-P07-7707',
+  'SAR':'TRF-SAR-P07-7708'
+};
+let pendingGroup=null;
+const selection=document.getElementById('screen-selection');
+const codeScreen=document.getElementById('screen-code');
+const modalOverlay=document.getElementById('modal-confirm');
+const modalBox=document.getElementById('modal-box');
+const btnReveal=document.getElementById('btn-reveal');
+const codeDisplay=document.getElementById('secret-code');
+
+window.addEventListener('load',()=>{
+  const savedGroup=localStorage.getItem('trifin_group_pos7');
+  if(savedGroup && POS_CODES[savedGroup]) showCodeScreen(savedGroup);
+});
+function selectGroup(groupName){
+  pendingGroup=groupName;
+  document.getElementById('modal-group-name').textContent=groupName;
+  modalOverlay.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>modalBox.classList.add('show')));
+}
+function closeModal(){
+  modalBox.classList.remove('show');
+  setTimeout(()=>{modalOverlay.style.display='none';pendingGroup=null;},240);
+}
+function confirmGroup(){
+  if(!pendingGroup)return;
+  const selected=pendingGroup;
+  localStorage.setItem('trifin_group_pos7',selected);
+  modalBox.classList.remove('show');
+  setTimeout(()=>{modalOverlay.style.display='none';pendingGroup=null;showCodeScreen(selected);},180);
+}
+function showCodeScreen(groupName){
+  selection.style.display='none';
+  codeScreen.style.display='block';
+  document.getElementById('display-group-name').textContent=groupName;
+  codeDisplay.textContent=POS_CODES[groupName];
+}
+
+const SHOW_LABEL='<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5Zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>Tahan untuk melihat kode';
+const HIDE_LABEL='<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5Zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg>Lepas untuk menyembunyikan';
+function showCode(e){e.preventDefault();codeDisplay.classList.add('revealed');btnReveal.innerHTML=HIDE_LABEL}
+function hideCode(e){if(e)e.preventDefault();codeDisplay.classList.remove('revealed');btnReveal.innerHTML=SHOW_LABEL}
+btnReveal.addEventListener('pointerdown',showCode);
+window.addEventListener('pointerup',hideCode);
+window.addEventListener('pointercancel',hideCode);
+modalOverlay.addEventListener('click',(e)=>{if(e.target===modalOverlay)closeModal()});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+</script>
+</body>
+</html>
